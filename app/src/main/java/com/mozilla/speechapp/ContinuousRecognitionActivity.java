@@ -30,6 +30,7 @@ import com.mozilla.speechmodule.R;
 import net.lingala.zip4j.core.ZipFile;
 
 import java.io.File;
+import java.util.Stack;
 
 public class ContinuousRecognitionActivity extends AppCompatActivity implements ISpeechRecognitionListener, CompoundButton.OnCheckedChangeListener {
 
@@ -44,6 +45,7 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
     private FloatingActionButton mFab;
     private TextView outputText;
     private WaveVisualizer mVisualizer;
+    private Stack<Integer> textLengths = new Stack<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +86,17 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
         outputText.setMovementMethod(new ScrollingMovementMethod());
 
         mVisualizer = findViewById(R.id.blast);
+
+        findViewById(R.id.clear_btn).setOnClickListener(view -> {
+            textLengths.clear();
+            outputText.setText("");
+        });
+        findViewById(R.id.reset_btn).setOnClickListener(view -> {
+            if (!textLengths.empty()) {
+                String currentText = outputText.getText().toString();
+                outputText.setText(currentText.substring(0, currentText.length() - textLengths.pop()));
+            }
+        });
 
 //        mGraph = findViewById(R.id.graph);
 //        mSeries1 = new LineGraphSeries<>(new DataPoint[0]);
@@ -143,8 +156,12 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
                     mVisualizer.setRawAudioBytes(bytes);
                     break;
                 case STT_RESULT:
-                    Log.d(TAG, String.format("Success: %s (%s)", ((STTResult)aPayload).mTranscription, ((STTResult)aPayload).mConfidence));
-                    outputText.append(((STTResult)aPayload).mTranscription + " ");
+                    String text = ((STTResult)aPayload).mTranscription;
+                    float confidence = ((STTResult)aPayload).mConfidence;
+                    Log.d(TAG, String.format("Success: %s (%s)", text, confidence));
+                    String appendText = text + " ";
+                    outputText.append(appendText);
+                    textLengths.push(appendText.length());
                     break;
                 case START_LISTEN:
                     Log.d(TAG, "Started to listen");
