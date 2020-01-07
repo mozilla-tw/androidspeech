@@ -97,21 +97,10 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
                 outputText.setText(currentText.substring(0, currentText.length() - textLengths.pop()));
             }
         });
-
-//        mGraph = findViewById(R.id.graph);
-//        mSeries1 = new LineGraphSeries<>(new DataPoint[0]);
-//        mGraph.addSeries(mSeries1);
-//        mGraph.getViewport().setXAxisBoundsManual(true);
-//        mGraph.getViewport().setScalable(true);
-//        mGraph.getViewport().setScalableY(true);
-//        mGraph.getViewport().setScrollable(true); // enables horizontal scrolling
-//        mGraph.getViewport().setScrollableY(true); // enables vertical scrolling
     }
 
     private void start() {
         try {
-//            mDtstart = System.currentTimeMillis();
-//            mSeries1.resetData(new DataPoint[0]);
             mMozillaSpeechService.setLanguage(LANG);
             mMozillaSpeechService.setProductTag("ContinuousRecognition");
             mMozillaSpeechService.setModelPath(getExternalFilesDir("models").getAbsolutePath());
