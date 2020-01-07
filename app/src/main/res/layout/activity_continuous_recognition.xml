@@ -2,38 +2,8 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-
-    <com.gauravk.audiovisualizer.visualizer.WaveVisualizer
-        xmlns:custom="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/blast"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        custom:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="12dp"
-        custom:avDensity="0.8"
-        custom:avType="outline"
-        custom:avColor="#8068EE"
-        custom:avGravity="top"/>
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <TextView
-            android:id="@+id/output"
-            android:textSize="48sp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginStart="15dp"
-            android:layout_marginTop="20dp"
-            android:layout_gravity="bottom"
-            android:textColor="@android:color/black"/>
-
-    </ScrollView>
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#FFFFFF">
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
@@ -43,7 +13,73 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:src="@drawable/ic_launcher_foreground"
         android:backgroundTint="#8068EE"
-        android:layout_margin="16dp" />
+        app:borderWidth="0dp"
+        android:layout_margin="20dp"/>
+
+    <View
+        android:id="@+id/toolbar_line"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#8068EE"
+        app:layout_constraintTop_toTopOf="@id/fab"
+        app:layout_constraintBottom_toBottomOf="@id/fab"/>
+
+    <View
+        android:layout_width="70dp"
+        android:layout_height="1dp"
+        android:background="#FFFFFF"
+        app:layout_constraintTop_toTopOf="@id/fab"
+        app:layout_constraintBottom_toBottomOf="@id/fab"
+        app:layout_constraintStart_toStartOf="@id/fab"
+        app:layout_constraintEnd_toEndOf="@id/fab"/>
+
+    <Button
+        android:id="@+id/delete_btn"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@drawable/ic_launcher_background"
+        app:layout_constraintTop_toBottomOf="@id/toolbar_line"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_margin="24dp"/>
+
+    <Button
+        android:id="@+id/reset_btn"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@drawable/ic_launcher_background"
+        app:layout_constraintTop_toBottomOf="@id/toolbar_line"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/delete_btn"
+        android:layout_margin="24dp"/>
+
+    <com.gauravk.audiovisualizer.visualizer.WaveVisualizer
+        xmlns:custom="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/blast"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="#FFFFFF"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        custom:avDensity="0.8"
+        custom:avType="outline"
+        custom:avColor="#8068EE"
+        custom:avGravity="top"/>
+
+    <TextView
+        android:id="@+id/output"
+        android:textSize="36sp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="20dp"
+        android:gravity="bottom"
+        android:textColor="@android:color/black"
+        android:scrollbars="vertical"
+        app:layout_constraintTop_toBottomOf="@id/blast"
+        app:layout_constraintBottom_toTopOf="@id/fab"/>
 
 
 </android.support.constraint.ConstraintLayout>

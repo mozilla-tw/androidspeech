@@ -15,6 +15,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.widget.CompoundButton;
 import android.widget.TextView;
@@ -80,6 +81,7 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
         });
 
         outputText = findViewById(R.id.output);
+        outputText.setMovementMethod(new ScrollingMovementMethod());
 
         mVisualizer = findViewById(R.id.blast);
 
