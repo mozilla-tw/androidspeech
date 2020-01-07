@@ -4,6 +4,18 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <com.gauravk.audiovisualizer.visualizer.WaveVisualizer
+        xmlns:custom="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/blast"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        custom:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="12dp"
+        custom:avDensity="0.8"
+        custom:avType="outline"
+        custom:avColor="#8068EE"
+        custom:avGravity="top"/>
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -14,7 +14,6 @@ import com.github.axet.audiolibrary.encoders.FormatOPUS;
 import com.github.axet.audiolibrary.encoders.Sound;
 
 import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
 
 class ContinuousNetworkSpeechRecognition implements Runnable {
 
@@ -78,9 +77,7 @@ class ContinuousNetworkSpeechRecognition implements Runnable {
                     nshorts = recorder.read(mBuftemp, 0, mBuftemp.length);
                     vad = mVad.feed(mBuftemp, nshorts);
                     e.encode(mBuftemp, 0, nshorts);
-                    double[] fft =  Sound.fft(mBuftemp, 0, nshorts);
-                    double fftsum = Arrays.stream(fft).sum()/fft.length;
-                    mService.notifyListeners(MozillaSpeechService.SpeechState.MIC_ACTIVITY, fftsum);
+                    mService.notifyListeners(MozillaSpeechService.SpeechState.MIC_ACTIVITY, short2byte(mBuftemp));
                 }
                 catch (Exception exc) {
                     exc.printStackTrace();
@@ -141,6 +138,17 @@ class ContinuousNetworkSpeechRecognition implements Runnable {
             mService.notifyListeners(MozillaSpeechService.SpeechState.ERROR, error);
             exc.printStackTrace();
         }
+    }
+
+    private byte[] short2byte(short[] sData) {
+        int shortArrsize = sData.length;
+        byte[] bytes = new byte[shortArrsize * 2];
+        for (int i = 0; i < shortArrsize; i++) {
+            bytes[i * 2] = (byte) (sData[i] & 0x00FF);
+            bytes[(i * 2) + 1] = (byte) (sData[i] >> 8);
+            sData[i] = 0;
+        }
+        return bytes;
     }
 
     private void notifyAudioOutput(ByteArrayOutputStream baos) {

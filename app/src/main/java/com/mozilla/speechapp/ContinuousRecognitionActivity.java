@@ -16,11 +16,11 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gauravk.audiovisualizer.visualizer.WaveVisualizer;
 import com.mozilla.speechlibrary.ISpeechRecognitionListener;
 import com.mozilla.speechlibrary.MozillaSpeechService;
 import com.mozilla.speechlibrary.STTResult;
@@ -29,8 +29,6 @@ import com.mozilla.speechmodule.R;
 import net.lingala.zip4j.core.ZipFile;
 
 import java.io.File;
-
-import static android.support.constraint.Constraints.TAG;
 
 public class ContinuousRecognitionActivity extends AppCompatActivity implements ISpeechRecognitionListener, CompoundButton.OnCheckedChangeListener {
 
@@ -44,6 +42,7 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
     private boolean mIsRecording = false;
     private FloatingActionButton mFab;
     private TextView outputText;
+    private WaveVisualizer mVisualizer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +80,8 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
         });
 
         outputText = findViewById(R.id.output);
+
+        mVisualizer = findViewById(R.id.blast);
 
 //        mGraph = findViewById(R.id.graph);
 //        mSeries1 = new LineGraphSeries<>(new DataPoint[0]);
@@ -135,8 +136,9 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
                     Log.d(TAG, "Decoding...");
                     break;
                 case MIC_ACTIVITY:
-//                    long mPointx = System.currentTimeMillis() - mDtstart;
-//                    mSeries1.appendData(new DataPoint(Math.round(mPointx) + 1, (double)aPayload * -1), true, 3000);
+                    byte[] bytes = (byte[]) aPayload;
+                    Log.d(TAG, "bytes: size: " + bytes.length);
+                    mVisualizer.setRawAudioBytes(bytes);
                     break;
                 case STT_RESULT:
                     Log.d(TAG, String.format("Success: %s (%s)", ((STTResult)aPayload).mTranscription, ((STTResult)aPayload).mConfidence));
@@ -165,6 +167,9 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
     protected void onDestroy() {
         super.onDestroy();
         removeListener();
+        if (mVisualizer != null) {
+            mVisualizer.release();
+        }
     }
 
     public void removeListener() {
