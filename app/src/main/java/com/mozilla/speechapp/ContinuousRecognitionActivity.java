@@ -185,6 +185,7 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        stop();
         removeListener();
         if (mVisualizer != null) {
             mVisualizer.release();
