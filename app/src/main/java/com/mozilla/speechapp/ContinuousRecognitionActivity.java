@@ -1,79 +1,59 @@
 package com.mozilla.speechapp;
 
 import android.Manifest;
-
-import android.app.Activity;
 import android.app.DownloadManager;
-
-import android.content.pm.PackageManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-
+import android.content.pm.PackageManager;
 import android.database.Cursor;
-
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-
-import android.net.Uri;
-
-import android.os.Bundle;
-import android.os.AsyncTask;
-
 import android.util.Log;
-
-import android.view.View;
-import android.view.WindowManager;
-
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.EditText;
-import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
-
-import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
 
 import com.mozilla.speechlibrary.ISpeechRecognitionListener;
 import com.mozilla.speechlibrary.MozillaSpeechService;
 import com.mozilla.speechlibrary.STTResult;
 import com.mozilla.speechmodule.R;
 
-import java.io.File;
-
 import net.lingala.zip4j.core.ZipFile;
+
+import java.io.File;
 
 import static android.support.constraint.Constraints.TAG;
 
-public class MainActivity extends AppCompatActivity implements ISpeechRecognitionListener, CompoundButton.OnCheckedChangeListener {
+public class ContinuousRecognitionActivity extends AppCompatActivity implements ISpeechRecognitionListener, CompoundButton.OnCheckedChangeListener {
+
+    private static final String TAG = "ContinuousRecognitionActivity";
+    private static final String LANG = "en-US";
 
     private static long sDownloadId;
     private static DownloadManager sDownloadManager;
 
     private MozillaSpeechService mMozillaSpeechService;
-    private GraphView mGraph;
-    private long mDtstart;
-    private LineGraphSeries<DataPoint> mSeries1;
-    private EditText mPlain_text_input;
+    private boolean mIsRecording = false;
+    private FloatingActionButton mFab;
+    private TextView outputText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_continuous_recognition);
         mMozillaSpeechService = MozillaSpeechService.getInstance();
         initialize();
     }
 
     private void initialize() {
-
-        Button buttonStart, buttonCancel, buttonContinuousMode;
-        EditText txtProdutTag, txtLanguage;
-        Switch switchTranscriptions = findViewById(R.id.switchTranscriptions);
-        Switch switchSamples = findViewById(R.id.switchSamples);
-        Switch useDeepSpeech = findViewById(R.id.useDeepSpeech);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -89,59 +69,59 @@ public class MainActivity extends AppCompatActivity implements ISpeechRecognitio
                     124);
         }
 
-        buttonStart = findViewById(R.id.button_start);
-        buttonCancel = findViewById(R.id.button_cancel);
-        txtProdutTag = findViewById(R.id.txtProdutTag);
-        txtLanguage = findViewById(R.id.txtLanguage);
-        buttonContinuousMode = findViewById(R.id.continuousMode);
-        buttonContinuousMode.setOnClickListener(view -> {
-            startActivity(new Intent(this, ContinuousRecognitionActivity.class));
-        });
+        mMozillaSpeechService.addListener(this);
 
-        mPlain_text_input = findViewById(R.id.plain_text_input);
-        buttonStart.setOnClickListener((View v) ->  {
-            try {
-                mMozillaSpeechService.addListener(this);
-                mDtstart = System.currentTimeMillis();
-                mSeries1.resetData(new DataPoint[0]);
-                mMozillaSpeechService.setLanguage(txtLanguage.getText().toString());
-                mMozillaSpeechService.setProductTag(txtProdutTag.getText().toString());
-                mMozillaSpeechService.setModelPath(getExternalFilesDir("models").getAbsolutePath());
-                if (mMozillaSpeechService.ensureModelInstalled()) {
-                    mMozillaSpeechService.start(getApplicationContext());
-                } else {
-                    maybeDownloadOrExtractModel(getExternalFilesDir("models").getAbsolutePath(), mMozillaSpeechService.getLanguageDir());
-                }
-            } catch (Exception e) {
-                Log.d(TAG, e.getLocalizedMessage());
-                e.printStackTrace();
+        mFab = findViewById(R.id.fab);
+        mFab.setOnClickListener(view -> {
+            if (mIsRecording) {
+                stop();
+            } else {
+                start();
             }
         });
 
-        buttonCancel.setOnClickListener((View v) ->  {
-            try {
-                mMozillaSpeechService.cancel();
-            } catch (Exception e) {
-                Log.d(TAG, e.getLocalizedMessage());
-                e.printStackTrace();
+        outputText = findViewById(R.id.output);
+
+//        mGraph = findViewById(R.id.graph);
+//        mSeries1 = new LineGraphSeries<>(new DataPoint[0]);
+//        mGraph.addSeries(mSeries1);
+//        mGraph.getViewport().setXAxisBoundsManual(true);
+//        mGraph.getViewport().setScalable(true);
+//        mGraph.getViewport().setScalableY(true);
+//        mGraph.getViewport().setScrollable(true); // enables horizontal scrolling
+//        mGraph.getViewport().setScrollableY(true); // enables vertical scrolling
+    }
+
+    private void start() {
+        try {
+//            mDtstart = System.currentTimeMillis();
+//            mSeries1.resetData(new DataPoint[0]);
+            mMozillaSpeechService.setLanguage(LANG);
+            mMozillaSpeechService.setProductTag("ContinuousRecognition");
+            mMozillaSpeechService.setModelPath(getExternalFilesDir("models").getAbsolutePath());
+            mMozillaSpeechService.setContinuousMode(true);
+            if (mMozillaSpeechService.ensureModelInstalled()) {
+                mIsRecording = true;
+                mFab.setImageResource(R.drawable.ic_launcher_background);
+                mMozillaSpeechService.start(getApplicationContext());
+            } else {
+                maybeDownloadOrExtractModel(getExternalFilesDir("models").getAbsolutePath(), mMozillaSpeechService.getLanguageDir());
             }
-        });
+        } catch (Exception e) {
+            Log.d(TAG, e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+    }
 
-        switchTranscriptions.setOnCheckedChangeListener(this);
-        switchSamples.setOnCheckedChangeListener(this);
-        useDeepSpeech.setOnCheckedChangeListener(this);
-        switchTranscriptions.toggle();
-        switchSamples.toggle();
-        useDeepSpeech.toggle();
-
-        mGraph = findViewById(R.id.graph);
-        mSeries1 = new LineGraphSeries<>(new DataPoint[0]);
-        mGraph.addSeries(mSeries1);
-        mGraph.getViewport().setXAxisBoundsManual(true);
-        mGraph.getViewport().setScalable(true);
-        mGraph.getViewport().setScalableY(true);
-        mGraph.getViewport().setScrollable(true); // enables horizontal scrolling
-        mGraph.getViewport().setScrollableY(true); // enables vertical scrolling
+    private void stop() {
+        mIsRecording = false;
+        mFab.setImageResource(R.drawable.ic_launcher_foreground);
+        try {
+            mMozillaSpeechService.cancel();
+        } catch (Exception e) {
+            Log.d(TAG, e.getLocalizedMessage());
+            e.printStackTrace();
+        }
     }
 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -152,36 +132,39 @@ public class MainActivity extends AppCompatActivity implements ISpeechRecognitio
         this.runOnUiThread(() -> {
             switch (aState) {
                 case DECODING:
-                    mPlain_text_input.append("Decoding... \n");
+                    Log.d(TAG, "Decoding...");
                     break;
                 case MIC_ACTIVITY:
-                    long mPointx = System.currentTimeMillis() - mDtstart;
-                    mSeries1.appendData(new DataPoint(Math.round(mPointx) + 1, (double)aPayload * -1), true, 3000);
+//                    long mPointx = System.currentTimeMillis() - mDtstart;
+//                    mSeries1.appendData(new DataPoint(Math.round(mPointx) + 1, (double)aPayload * -1), true, 3000);
                     break;
                 case STT_RESULT:
-                    String message = String.format("Success: %s (%s)", ((STTResult)aPayload).mTranscription, ((STTResult)aPayload).mConfidence);
-                    mPlain_text_input.append(message + "\n");
-                    removeListener();
+                    Log.d(TAG, String.format("Success: %s (%s)", ((STTResult)aPayload).mTranscription, ((STTResult)aPayload).mConfidence));
+                    outputText.append(((STTResult)aPayload).mTranscription + " ");
                     break;
                 case START_LISTEN:
-                    mPlain_text_input.append("Started to listen\n");
+                    Log.d(TAG, "Started to listen");
                     break;
                 case NO_VOICE:
-                    mPlain_text_input.append("No Voice detected\n");
-                    removeListener();
+                    Log.d(TAG, "No Voice detected");
                     break;
                 case CANCELED:
-                    mPlain_text_input.append("Canceled\n");
-                    removeListener();
+                    Log.d(TAG, "Canceled");
+                    stop();
                     break;
                 case ERROR:
-                    mPlain_text_input.append("Error:" + aPayload + " \n");
-                    removeListener();
+                    Log.d(TAG, "Error:" + aPayload);
                     break;
                 default:
                     break;
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        removeListener();
     }
 
     public void removeListener() {
@@ -204,7 +187,7 @@ public class MainActivity extends AppCompatActivity implements ISpeechRecognitio
         @Override
         protected void onPreExecute() {
             Toast noModel = Toast.makeText(getApplicationContext(), "Extracting downloaded model", Toast.LENGTH_LONG);
-            mPlain_text_input.append("Extracting downloaded model\n");
+            Log.d(TAG, "Extracting downloaded model");
             noModel.show();
         }
 
@@ -224,10 +207,8 @@ public class MainActivity extends AppCompatActivity implements ISpeechRecognitio
 
         @Override
         protected void onPostExecute(Boolean result) {
-            Button buttonStart = findViewById(R.id.button_start), buttonCancel = findViewById(R.id.button_cancel);
             mMozillaSpeechService.start(getApplicationContext());
-            buttonStart.setEnabled(true);
-            buttonCancel.setEnabled(true);
+            mFab.setEnabled(true);
         }
 
     }
@@ -244,9 +225,7 @@ public class MainActivity extends AppCompatActivity implements ISpeechRecognitio
         Uri modelZipURL  = Uri.parse(mMozillaSpeechService.getModelDownloadURL());
         Uri modelZipFile = Uri.parse("file://" + zipFile);
 
-        Button buttonStart = findViewById(R.id.button_start), buttonCancel = findViewById(R.id.button_cancel);
-        buttonStart.setEnabled(false);
-        buttonCancel.setEnabled(false);
+        mFab.setEnabled(false);
 
         BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
@@ -270,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements ISpeechRecognitio
         };
 
         Toast noModel = Toast.makeText(getApplicationContext(), "No model has been found for language '" + aLang + "'. Triggering download ...", Toast.LENGTH_LONG);
-        mPlain_text_input.append("No model has been found for language '" + aLang + "'. Triggering download ...\n");
+        Log.d(TAG, "No model has been found for language '" + aLang + "'. Triggering download ...");
         noModel.show();
 
         sDownloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);

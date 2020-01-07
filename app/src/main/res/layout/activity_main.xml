@@ -57,6 +57,14 @@
             android:layout_below="@+id/switchTranscriptions"
             android:text="Use DeepSpeech" />
 
+        <Button
+            android:id="@+id/continuousMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/useDeepSpeech"
+            android:layout_alignParentEnd="true"
+            android:text="Continuous Mode" />
+
         <Switch
             android:id="@+id/switchTranscriptions"
             android:layout_width="wrap_content"
@@ -97,4 +105,5 @@
             android:text="en-us" />
     
     </RelativeLayout>
+
 </android.support.constraint.ConstraintLayout>

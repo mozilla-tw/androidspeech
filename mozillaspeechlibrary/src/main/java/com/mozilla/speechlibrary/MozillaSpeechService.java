@@ -1,7 +1,7 @@
 package com.mozilla.speechlibrary;
 
-import android.app.Activity;
 import android.content.Context;
+import android.os.Looper;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -16,6 +16,7 @@ public class MozillaSpeechService {
     private boolean isIdle = true;
     NetworkSettings mNetworkSettings;
     private boolean useDeepSpeech = false;
+    private boolean continuousMode = false;
     private String mModelPath;
 
     public enum SpeechState
@@ -27,6 +28,7 @@ public class MozillaSpeechService {
     private static final MozillaSpeechService ourInstance = new MozillaSpeechService();
     private NetworkSpeechRecognition mNetworkSpeechRecognition;
     private LocalSpeechRecognition mLocalSpeechRecognition;
+    private ContinuousNetworkSpeechRecognition mContinuousNetworkSpeechRecognition;
     private SpeechState mState;
     private Vad mVad;
 
@@ -52,7 +54,10 @@ public class MozillaSpeechService {
                 } else {
                     Thread audio_thread;
 
-                    if (this.useDeepSpeech) {
+                    if (this.continuousMode) {
+                        this.mContinuousNetworkSpeechRecognition = new ContinuousNetworkSpeechRecognition(Looper.myLooper(), SAMPLERATE, CHANNELS, mVad, aContext, this, mNetworkSettings);
+                        audio_thread = new Thread(this.mContinuousNetworkSpeechRecognition);
+                    } else if (this.useDeepSpeech) {
                         this.mLocalSpeechRecognition = new LocalSpeechRecognition(SAMPLERATE, CHANNELS, mVad, this);
                         audio_thread = new Thread(this.mLocalSpeechRecognition);
                     } else {
@@ -89,9 +94,14 @@ public class MozillaSpeechService {
     }
 
     public void cancel() {
-        // this.mNetworkSpeechRecognition.cancel();
+        if (this.mNetworkSpeechRecognition != null) {
+            this.mNetworkSpeechRecognition.cancel();
+        }
         if (this.mLocalSpeechRecognition != null) {
             this.mLocalSpeechRecognition.cancel();
+        }
+        if (this.mContinuousNetworkSpeechRecognition != null) {
+            this.mContinuousNetworkSpeechRecognition.cancel();
         }
     }
 
@@ -119,6 +129,10 @@ public class MozillaSpeechService {
 
     public void useDeepSpeech(boolean yesOrNo) {
         this.useDeepSpeech = yesOrNo;
+    }
+
+    public void setContinuousMode(boolean yesOrNo) {
+        this.continuousMode = yesOrNo;
     }
 
     public String getModelPath() {
