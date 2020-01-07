@@ -107,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements ISpeechRecognitio
                 mMozillaSpeechService.setLanguage(txtLanguage.getText().toString());
                 mMozillaSpeechService.setProductTag(txtProdutTag.getText().toString());
                 mMozillaSpeechService.setModelPath(getExternalFilesDir("models").getAbsolutePath());
+                mMozillaSpeechService.setContinuousMode(false);
                 if (mMozillaSpeechService.ensureModelInstalled()) {
                     mMozillaSpeechService.start(getApplicationContext());
                 } else {
