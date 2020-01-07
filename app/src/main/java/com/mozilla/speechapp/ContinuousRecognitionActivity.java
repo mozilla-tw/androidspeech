@@ -118,7 +118,7 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
             mMozillaSpeechService.setContinuousMode(true);
             if (mMozillaSpeechService.ensureModelInstalled()) {
                 mIsRecording = true;
-                mFab.setImageResource(R.drawable.ic_launcher_background);
+                mFab.setImageResource(R.drawable.ic_stop);
                 mMozillaSpeechService.start(getApplicationContext());
             } else {
                 maybeDownloadOrExtractModel(getExternalFilesDir("models").getAbsolutePath(), mMozillaSpeechService.getLanguageDir());
@@ -131,7 +131,7 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
 
     private void stop() {
         mIsRecording = false;
-        mFab.setImageResource(R.drawable.ic_launcher_foreground);
+        mFab.setImageResource(R.drawable.ic_play);
         try {
             mMozillaSpeechService.cancel();
         } catch (Exception e) {

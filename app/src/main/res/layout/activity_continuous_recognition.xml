@@ -11,9 +11,11 @@
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:src="@drawable/ic_launcher_foreground"
+        android:src="@drawable/ic_play"
+        android:tint="@android:color/white"
         android:backgroundTint="#8068EE"
         app:borderWidth="0dp"
+        android:scaleType="centerInside"
         android:layout_margin="20dp"/>
 
     <View
@@ -33,21 +35,25 @@
         app:layout_constraintStart_toStartOf="@id/fab"
         app:layout_constraintEnd_toEndOf="@id/fab"/>
 
-    <Button
+    <ImageView
         android:id="@+id/clear_btn"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:background="@drawable/ic_launcher_background"
+        android:src="@drawable/ic_delete"
+        android:tint="#8068EE"
+        android:padding="6dp"
         app:layout_constraintTop_toBottomOf="@id/toolbar_line"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_margin="24dp"/>
 
-    <Button
+    <ImageView
         android:id="@+id/reset_btn"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:background="@drawable/ic_launcher_background"
+        android:src="@drawable/ic_reset"
+        android:tint="#8068EE"
+        android:padding="6dp"
         app:layout_constraintTop_toBottomOf="@id/toolbar_line"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/clear_btn"
