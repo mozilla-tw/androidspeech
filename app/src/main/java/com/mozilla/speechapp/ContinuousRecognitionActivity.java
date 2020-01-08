@@ -121,7 +121,7 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
 
     private void stop() {
         mIsRecording = false;
-        mFab.setImageResource(R.drawable.ic_play);
+        mFab.setImageResource(R.drawable.ic_mic);
         try {
             mMozillaSpeechService.cancel();
         } catch (Exception e) {

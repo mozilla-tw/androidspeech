@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:src="@drawable/ic_play"
+        android:src="@drawable/ic_mic"
         android:tint="@android:color/white"
         android:backgroundTint="#8068EE"
         app:borderWidth="0dp"
