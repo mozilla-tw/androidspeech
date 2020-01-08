@@ -38,6 +38,7 @@ import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
 import com.mozilla.speechlibrary.ISpeechRecognitionListener;
+import com.mozilla.speechlibrary.MicData;
 import com.mozilla.speechlibrary.MozillaSpeechService;
 import com.mozilla.speechlibrary.STTResult;
 import com.mozilla.speechmodule.R;
@@ -156,8 +157,9 @@ public class MainActivity extends AppCompatActivity implements ISpeechRecognitio
                     mPlain_text_input.append("Decoding... \n");
                     break;
                 case MIC_ACTIVITY:
+                    MicData micData = (MicData) aPayload;
                     long mPointx = System.currentTimeMillis() - mDtstart;
-                    mSeries1.appendData(new DataPoint(Math.round(mPointx) + 1, (double)aPayload * -1), true, 3000);
+                    mSeries1.appendData(new DataPoint(Math.round(mPointx) + 1, micData.getFftsum() * -1), true, 3000);
                     break;
                 case STT_RESULT:
                     String message = String.format("Success: %s (%s)", ((STTResult)aPayload).mTranscription, ((STTResult)aPayload).mConfidence);

@@ -266,7 +266,7 @@ class LocalSpeechRecognition implements Runnable {
                 vad = mVad.feed(mBuftemp, nshorts);
                 double[] fft =  Sound.fft(mBuftemp, 0, nshorts);
                 double fftsum = Arrays.stream(fft).sum()/fft.length;
-                mService.notifyListeners(MozillaSpeechService.SpeechState.MIC_ACTIVITY, fftsum);
+                mService.notifyListeners(MozillaSpeechService.SpeechState.MIC_ACTIVITY, new MicData(fftsum, GeneralUtils.short2byte(mBuftemp)));
 
                 long dtdepois = System.currentTimeMillis();
 

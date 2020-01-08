@@ -23,6 +23,7 @@ import android.widget.Toast;
 
 import com.gauravk.audiovisualizer.visualizer.WaveVisualizer;
 import com.mozilla.speechlibrary.ISpeechRecognitionListener;
+import com.mozilla.speechlibrary.MicData;
 import com.mozilla.speechlibrary.MozillaSpeechService;
 import com.mozilla.speechlibrary.STTResult;
 import com.mozilla.speechmodule.R;
@@ -140,9 +141,9 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
                     Log.d(TAG, "Decoding...");
                     break;
                 case MIC_ACTIVITY:
-                    byte[] bytes = (byte[]) aPayload;
-                    Log.d(TAG, "bytes: size: " + bytes.length);
-                    mVisualizer.setRawAudioBytes(bytes);
+                    MicData micData = (MicData) aPayload;
+                    Log.d(TAG, "bytes: size: " + micData.getBytes().length);
+                    mVisualizer.setRawAudioBytes(micData.getBytes());
                     break;
                 case STT_RESULT:
                     String text = ((STTResult)aPayload).mTranscription;
