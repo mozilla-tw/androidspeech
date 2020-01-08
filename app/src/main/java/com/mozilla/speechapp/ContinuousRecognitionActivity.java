@@ -17,6 +17,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -45,6 +46,7 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
     private boolean mIsRecording = false;
     private FloatingActionButton mFab;
     private TextView outputText;
+    private View mShareButton;
     private WaveVisualizer mVisualizer;
     private Stack<Integer> textLengths = new Stack<>();
 
@@ -74,12 +76,18 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
 
         mMozillaSpeechService.addListener(this);
 
+        mShareButton = findViewById(R.id.share_btn);
+        mShareButton.setOnClickListener(view -> shareText(outputText.getText().toString()));
+
         mFab = findViewById(R.id.fab);
         mFab.setOnClickListener(view -> {
             if (mIsRecording) {
                 stop();
+                boolean hasText = !outputText.getText().toString().isEmpty();
+                mShareButton.setVisibility(hasText ? View.VISIBLE : View.GONE);
             } else {
                 start();
+                mShareButton.setVisibility(View.GONE);
             }
         });
 
@@ -91,13 +99,26 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
         findViewById(R.id.clear_btn).setOnClickListener(view -> {
             textLengths.clear();
             outputText.setText("");
+            mShareButton.setVisibility(View.GONE);
         });
         findViewById(R.id.reset_btn).setOnClickListener(view -> {
             if (!textLengths.empty()) {
                 String currentText = outputText.getText().toString();
                 outputText.setText(currentText.substring(0, currentText.length() - textLengths.pop()));
             }
+            boolean hasText = !outputText.getText().toString().isEmpty();
+            mShareButton.setVisibility(hasText ? View.VISIBLE : View.GONE);
         });
+    }
+
+    private void shareText(String text) {
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, text);
+        sendIntent.setType("text/plain");
+
+        Intent shareIntent = Intent.createChooser(sendIntent, null);
+        startActivity(shareIntent);
     }
 
     private void start() {
