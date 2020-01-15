@@ -15,19 +15,19 @@
         android:supportsRtl="true"
         android:hardwareAccelerated="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.mozilla.speechapp.MainActivity">
+        <activity android:name="com.mozilla.speechapp.MainActivity"/>
+
+        <activity
+            android:name="com.mozilla.speechapp.ContinuousRecognitionActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:windowSoftInputMode="stateHidden"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name="com.mozilla.speechapp.ContinuousRecognitionActivity"
-            android:theme="@style/Theme.AppCompat.NoActionBar"
-            android:windowSoftInputMode="stateHidden"
-            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>
