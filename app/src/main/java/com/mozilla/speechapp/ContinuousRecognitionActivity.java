@@ -11,15 +11,17 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
-import android.text.method.ScrollingMovementMethod;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gauravk.audiovisualizer.visualizer.WaveVisualizer;
@@ -45,7 +47,7 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
     private MozillaSpeechService mMozillaSpeechService;
     private boolean mIsRecording = false;
     private FloatingActionButton mFab;
-    private TextView outputText;
+    private CursorAwareEditText outputText;
     private View mShareButton;
     private WaveVisualizer mVisualizer;
     private Stack<Integer> textLengths = new Stack<>();
@@ -57,6 +59,9 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
         mMozillaSpeechService = MozillaSpeechService.getInstance();
         initialize();
     }
+
+    String selectedWord = null;
+    boolean autoSelectEnabled = true;
 
     private void initialize() {
 
@@ -92,7 +97,40 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
         });
 
         outputText = findViewById(R.id.output);
-        outputText.setMovementMethod(new ScrollingMovementMethod());
+        outputText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String afterText = s.toString();
+                int start = outputText.getSelectionStart();
+                int end = outputText.getSelectionEnd();
+                if (start != -1 && end != -1) {
+                    if (!afterText.substring(start, end).equals(selectedWord)) {
+                        autoSelectEnabled = false;
+                        new Handler().postDelayed(() -> autoSelectEnabled = true, 300);
+                        outputText.setSelection(end, end);
+                    }
+                }
+            }
+        });
+        outputText.setSelectionChangedListener((selStart, selEnd) -> {
+            if (selStart != -1 && selStart == selEnd && autoSelectEnabled) {
+                String text = outputText.getText().toString();
+                Pair<Integer, Integer> pair = findWord(text, selStart);
+                int start = pair.first;
+                int end = pair.second;
+                String word = text.substring(start, end);
+                outputText.setSelection(start, end);
+                selectedWord = word;
+            }
+        });
 
         mVisualizer = findViewById(R.id.blast);
 
@@ -100,6 +138,9 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
             textLengths.clear();
             outputText.setText("");
             mShareButton.setVisibility(View.GONE);
+        });
+        findViewById(R.id.go_to_bottom_btn).setOnClickListener(view -> {
+            outputText.setSelection(outputText.getText().toString().length());
         });
         findViewById(R.id.reset_btn).setOnClickListener(view -> {
             if (!textLengths.empty()) {
@@ -109,6 +150,35 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
             boolean hasText = !outputText.getText().toString().isEmpty();
             mShareButton.setVisibility(hasText ? View.VISIBLE : View.GONE);
         });
+    }
+
+    // Pair(start, end)
+    private Pair<Integer, Integer> findWord(String text, int selectedIndex) {
+        int start = selectedIndex;
+        int end = selectedIndex;
+
+        if (selectedIndex >= text.length() || text.charAt(selectedIndex) == ' ') {
+            while(start > 0) {
+                start--;
+                if (text.charAt(start) == ' ' || text.charAt(start) == '\n') {
+                    start++;
+                    break;
+                }
+            }
+        } else {
+            while(start > 0) {
+                start--;
+                if (text.charAt(start) == ' ' || text.charAt(start) == '\n') {
+                    start++;
+                    break;
+                }
+            }
+            do {
+                end++;
+            } while (end < text.length() && text.charAt(end) != ' ' && text.charAt(end) != '\n');
+        }
+
+        return new Pair<>(start, end);
     }
 
     private void shareText(String text) {

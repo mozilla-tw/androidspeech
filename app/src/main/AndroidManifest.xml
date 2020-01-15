@@ -26,6 +26,7 @@
         <activity
             android:name="com.mozilla.speechapp.ContinuousRecognitionActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:windowSoftInputMode="stateHidden"
             android:screenOrientation="portrait"/>
     </application>
 
