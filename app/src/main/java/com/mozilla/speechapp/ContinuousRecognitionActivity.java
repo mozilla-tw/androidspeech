@@ -40,6 +40,8 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
 
     private static final String TAG = "ContinuousRecognitionActivity";
     private static final String LANG = "en-US";
+    private static final int REQUEST_CODE_RECORD_AUDIO = 123;
+    private static final int REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 124;
 
     private static long sDownloadId;
     private static DownloadManager sDownloadManager;
@@ -65,19 +67,7 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
 
     private void initialize() {
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO},
-                    123);
-        }
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    124);
-        }
+        checkPermission();
 
         mMozillaSpeechService.addListener(this);
 
@@ -152,6 +142,38 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
         });
     }
 
+    private void checkPermission() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO},
+                    REQUEST_CODE_RECORD_AUDIO);
+        } else if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_CODE_WRITE_EXTERNAL_STORAGE);
+        }
+    }
+
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_CODE_RECORD_AUDIO:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    checkPermission();
+                } else {
+                    finish();
+                }
+                break;
+            case REQUEST_CODE_WRITE_EXTERNAL_STORAGE:
+                if (grantResults.length > 0
+                        && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    finish();
+                }
+        }
+    }
+
     // Pair(start, end)
     private Pair<Integer, Integer> findWord(String text, int selectedIndex) {
         int start = selectedIndex;
@@ -219,10 +241,6 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
             Log.d(TAG, e.getLocalizedMessage());
             e.printStackTrace();
         }
-    }
-
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     public void onSpeechStatusChanged(MozillaSpeechService.SpeechState aState, Object aPayload){
