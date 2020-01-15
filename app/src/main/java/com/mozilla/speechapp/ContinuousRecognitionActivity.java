@@ -2,6 +2,7 @@ package com.mozilla.speechapp;
 
 import android.Manifest;
 import android.app.DownloadManager;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -40,8 +41,7 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
 
     private static final String TAG = "ContinuousRecognitionActivity";
     private static final String LANG = "en-US";
-    private static final int REQUEST_CODE_RECORD_AUDIO = 123;
-    private static final int REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 124;
+    private static final int PERMISSION_REQUEST_CODE = 123;
 
     private static long sDownloadId;
     private static DownloadManager sDownloadManager;
@@ -143,34 +143,31 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
     }
 
     private void checkPermission() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO},
-                    REQUEST_CODE_RECORD_AUDIO);
-        } else if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    REQUEST_CODE_WRITE_EXTERNAL_STORAGE);
+        if (!hasPermissions(this, Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    PERMISSION_REQUEST_CODE);
         }
     }
 
+    public static boolean hasPermissions(Context context, String... permissions) {
+        if (context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_CODE_RECORD_AUDIO:
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            for (int grantResult : grantResults) {
+                if (grantResult != PackageManager.PERMISSION_GRANTED) {
                     checkPermission();
-                } else {
-                    finish();
+                    break;
                 }
-                break;
-            case REQUEST_CODE_WRITE_EXTERNAL_STORAGE:
-                if (grantResults.length > 0
-                        && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    finish();
-                }
+            }
         }
     }
 
@@ -307,12 +304,18 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
     }
 
     private class AsyncUnzip extends AsyncTask<String, Void, Boolean> {
+        private ProgressDialog dialog;
+
+        public AsyncUnzip() {
+            dialog = new ProgressDialog(ContinuousRecognitionActivity.this);
+        }
 
         @Override
         protected void onPreExecute() {
-            Toast noModel = Toast.makeText(getApplicationContext(), "Extracting downloaded model", Toast.LENGTH_LONG);
             Log.d(TAG, "Extracting downloaded model");
-            noModel.show();
+            dialog.setMessage("Extracting downloaded model");
+            dialog.setCancelable(false);
+            dialog.show();
         }
 
         @Override
@@ -331,8 +334,11 @@ public class ContinuousRecognitionActivity extends AppCompatActivity implements 
 
         @Override
         protected void onPostExecute(Boolean result) {
-            mMozillaSpeechService.start(getApplicationContext());
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
             mFab.setEnabled(true);
+            start();
         }
 
     }
